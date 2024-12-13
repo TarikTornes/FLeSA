@@ -27,6 +27,24 @@ class BERTMovieReviewClassifier(nn.Module):
         return logits
 
 
+def evaluate(model, test_loader):
+    model.eval()
+    correct = 0
+    total = 0
+    
+    with torch.no_grad():
+        for data, target in test_loader:
+            output = model(data)
+            _, predicted = torch.max(output.data, 1)
+            total += target.size(0)
+            correct += (predicted == target).sum().item()
+    accuracy = 100 * correct / total
+
+    return accuracy
+
+
+
+
 def train_model(model, train_loader, val_loader, criterion, optimizer, epochs=3):
 
     if torch.backends.mps.is_available():

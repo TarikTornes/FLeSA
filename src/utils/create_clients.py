@@ -1,21 +1,33 @@
-import random
+import numpy as np
+import torch
 
-def create_clients(X, y, num_clients=3, initial='clients'):
 
-    client_names = ['{}_{}'.format(initial, i+1) for i in range(num_clients)]
+def create_clients(dataset, num_clients=3):
+    ''' This function splits the dataset into subsets for
+        each client (i.e. shards)
+        Code is from: https://techestate.io/demystifying-federated-machine-learning-a-practical-guide-with-pytorch/
 
-    data = list(zip(X,y))
-    random.shuffle(data)
+        Args:
+            dataset (PyTorch Dataset): whole dataset (features+labels)
+            num_clients (int): number of clients
 
-    # determines the length of shard for each client
-    size = len(data)//num_clients
+        Return:
+            client_data (List[Dataset]): Data subset for each client
+    '''
 
-    # splits the data into shards for each client
-    shards = [data[i:i + size] for i in range(0, size*num_clients, size)]
+    data_len = len(dataset)
+    indices = list(range(data_len))
+    split_size = data_len // num_clients
 
-    assert(len(shards) == len(client_names))
+    np.random.seed(42)
+    np.random.shuffle(indices)
 
-    # associates each client with a shard
-    res = {client_names[i] : shards[i] for i in range(len(client_names))}
+    client_data = []
+    for i in range(num_clients):
+        start = i * split_size
+        end = start + split_size
+        # Takes a subset split_size samples from indices to get
+        # a shuffled dataset for a client of split_size
+        client_data.append(torch.utils.data.Subset(dataset, indices[start:end]))
 
-    return res
+    return client_data

@@ -1,4 +1,4 @@
-import os, re
+import os, re, pickle
 
 def parse_filename(file_name):
     match = re.match(r'(\d+)_(\d+)\.txt', file_name)
@@ -13,15 +13,28 @@ def parse_filename(file_name):
     return None, None
 
 
+def load_reviews():
+    data_dir = "./data/movRev_data"
 
-
-def load_reviews(data_dir):
     reviews = []
     labels = []
-    ids = []
-    ratings = []
-    dict_pos = {}
-    dict_neg = {}
+    # ids = []
+    # ratings = []
+    # dict_pos = {}
+    # dict_neg = {}
+
+    if os.path.isfile("./data/movie_review.pkl"):
+        print("Pickled dataset is present. \nLoading pickle movie_review.pkl")
+        with open("./data/movie_review.pkl", "rb") as f:
+            data_pickle = pickle.load(f)
+
+        reviews = data_pickle["reviews"]
+        labels = data_pickle["labels"]
+        # ids = data_pickle["ids"]
+        # ratings = data_pickle["ratings"]
+
+        return reviews, labels
+
 
 
     for p in ["train", "test"]:
@@ -38,9 +51,9 @@ def load_reviews(data_dir):
                     with open(os.path.join(pos_dir, file_name), 'r') as file:
                         reviews.append(file.read())
                         labels.append(1)
-                        ids.append(review_id)
-                        ratings.append(rating)
-                        dict_pos[review_id] = (file.read(), rating)
+                        # ids.append(review_id)
+                        # ratings.append(rating)
+                        # dict_pos[review_id] = (file.read(), rating)
 
         neg_dir = os.path.join(data_dir, p + '/neg')
 
@@ -55,15 +68,11 @@ def load_reviews(data_dir):
                     with open(os.path.join(neg_dir, file_name), 'r') as file:
                         reviews.append(file.read())
                         labels.append(0)
-                        ids.append(review_id)
-                        ratings.append(rating)
-                        dict_neg[review_id] = (file.read(), rating)
+                        # ids.append(review_id)
+                        # ratings.append(rating)
+                        # dict_neg[review_id] = (file.read(), rating)
 
 
 
 
-    return reviews, labels, ids, ratings, dict_pos, dict_neg
-
-
-
-
+    return reviews, labels

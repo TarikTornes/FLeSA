@@ -2,6 +2,7 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 from transformers import BertModel
+from ..utils.check_device import get_device
 
 class BERTMovieReviewClassifier(nn.Module):
 
@@ -28,16 +29,36 @@ class BERTMovieReviewClassifier(nn.Module):
 
 
 def evaluate(model, test_loader):
+    """
+    Evaluates the model in order to compute
+    its performance.
+
+    Args:
+        model (nn.Model): model to be evaluated
+        test_loader (DataLoader): Test data for evaluation
+
+    Return:
+        accuracy (float): accuracy score of the model on the test set
+    """
+    device = get_device()
+    model.to(device)
+
     model.eval()
     correct = 0
     total = 0
-    
+
     with torch.no_grad():
-        for data, target in test_loader:
-            output = model(data)
-            _, predicted = torch.max(output.data, 1)
-            total += target.size(0)
-            correct += (predicted == target).sum().item()
+        for batch in test_loader:
+            input_ids = batch['input_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            token_type_ids = batch['token_type_ids'].to(device)
+            labels = batch['labels'].to(device)
+
+            outputs = model(input_ids, attention_mask, token_type_ids)
+
+            _, predicted = torch.max(outputs, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
     accuracy = 100 * correct / total
 
     return accuracy
@@ -46,17 +67,21 @@ def evaluate(model, test_loader):
 
 
 def train_model(model, train_loader, val_loader, criterion, optimizer, epochs=3):
+    """
+    Trains a model on given hyperparameters. And prints the performance on the 
+    validation set.
 
-    if torch.backends.mps.is_available():
-        device = "mps"
-        print("Using device: mps")
-    elif torch.backends.cuda.is_available():
-        device = "cuda"
-        print("Using device: cuda")
-    else:
-        device = "cpu"
-        print("Using device: cpu")
+    Args:
+        model (nn.Model): model to be trained
+        train_loader (DataLoader): data on which the model will be trained
+        val_loader (DataLoader): data on which we will perform validation after training
+        criterion (Loss function): criterion to compute the loss
+        optimizer (Optimizer): optimization algorithm
+        epochs (int): number of epoch the model will train
+    """
 
+    
+    device = get_device()
     model.to(device)
 
 
@@ -126,6 +151,18 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, epochs=3)
 
 
 def predict_review(review, model, tokenizer, device):
+    """
+    Predicts sentiment of a review with a trained model
+
+    Args:
+        review (str): text representing a movie review
+        model (nn.Model): trained model which will perform the prediction
+        tokenizer (Tokenizer): tokenizer corresponding to the training data
+        device: device on which the model should evaluate
+
+    Return:
+        return1 (str): "Positive"/"Negative" predicted by the model
+    """
     model.eval()
     inputs = tokenizer.encode_plus(
         review,

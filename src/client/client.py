@@ -1,7 +1,8 @@
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import torch.nn as nn
-from ..model.bertmodel import BertModel as Net
+from ..model.bertmodel import BERTMovieReviewClassifier as Net
+from ..utils.check_device import get_device
 
 
 class Client:
@@ -17,7 +18,7 @@ class Client:
     def __init__(self, train_data, batch_size, lr, epochs):
         self.train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
         self.model = Net()
-        self.optimizer = optim.SGD(self.model.parameters, lr=lr)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=lr)
         self.epochs = epochs
         self.criterion = nn.CrossEntropyLoss()
 
@@ -28,15 +29,29 @@ class Client:
             return1 (state_dict): new learned weights of the model
         '''
 
-        for _ in range(self.epochs):
+        device = get_device()
+        self.model.to(device)
 
-            for _, (data, target) in enumerate(self.train_loader):
+        for epoch in range(self.epochs):
+            self.model.train()
+            print(f'Epoch: {epoch}')
+
+            counter = 0
+            for batch in self.train_loader:
+
+                counter += 1
+                input_ids = batch['input_ids'].to(device)
+                attention_mask = batch['attention_mask'].to(device)
+                token_type_ids = batch['token_type_ids'].to(device)
+                labels = batch['labels'].to(device)
 
                 self.optimizer.zero_grad()
-                output = self.model(data)
-                loss = self.criterion(output, target)
+                output = self.model(input_ids, attention_mask, token_type_ids)
+                loss = self.criterion(output, labels)
                 loss.backward()
                 self.optimizer.step()
+                if (counter+1) % 25 == 0:
+                    print(f"Processing batch {counter+1}/{len(self.train_loader)}")
 
         return self.model.state_dict()
 

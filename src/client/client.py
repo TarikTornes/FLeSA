@@ -1,8 +1,10 @@
 from torch.utils.data import DataLoader
+import torch
 import torch.optim as optim
 import torch.nn as nn
 from ..model.bertmodel import BERTMovieReviewClassifier as Net
 from ..utils.check_device import get_device
+from ..utils.tracker import MemoryProfiler
 
 
 class Client:
@@ -15,6 +17,7 @@ class Client:
             epochs: Amount of epochs to train
             criterion: Criterion used for the training
     '''
+
     def __init__(self, train_data, batch_size, lr, epochs):
         self.train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
         self.model = Net()
@@ -29,8 +32,16 @@ class Client:
             return1 (state_dict): new learned weights of the model
         '''
 
+        profiler = MemoryProfiler()
+
+        profiler.log_memory("Start training")
+
         device = get_device()
         self.model.to(device)
+
+
+        # torch.mps.empty_cache()
+        # profiler.log_memory("Emptied cache")
 
         for epoch in range(self.epochs):
             self.model.train()
@@ -50,8 +61,16 @@ class Client:
                 loss = self.criterion(output, labels)
                 loss.backward()
                 self.optimizer.step()
+                
+                # torch.mps.synchronize()
+
                 if (counter+1) % 25 == 0:
                     print(f"Processing batch {counter+1}/{len(self.train_loader)}")
+
+        
+        profiler.log_memory("End training")
+
+        torch.mps.empty_cache()
 
         return self.model.state_dict()
 

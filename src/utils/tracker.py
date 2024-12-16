@@ -2,6 +2,8 @@ import tracemalloc
 import psutil
 import os
 import gc
+import tracemalloc
+
 
 def track_memory():
     """
@@ -22,3 +24,8 @@ class MemoryProfiler:
         self.memories.append((label, current_memory, memory_diff))
         print(f"{label} - Memory Used: {current_memory:.2f} MB (Increase: {memory_diff:.2f} MB)")
         return current_memory
+
+
+def trace_mem(line_info):
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"[{line_info}] Current memory usage: {current / 1024:.2f} KB; Peak: {peak / 1024:.2f} KB")

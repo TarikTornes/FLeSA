@@ -5,6 +5,7 @@ import torch.nn as nn
 from ..model.bertmodel import BERTMovieReviewClassifier as Net
 from ..utils.check_device import get_device
 from ..utils.tracker import MemoryProfiler
+import copy
 
 
 class Client:
@@ -32,9 +33,6 @@ class Client:
             return1 (state_dict): new learned weights of the model
         '''
 
-        profiler = MemoryProfiler()
-
-        profiler.log_memory("Start training")
 
         device = get_device()
         self.model.to(device)
@@ -67,10 +65,8 @@ class Client:
                 if (counter+1) % 25 == 0:
                     print(f"Processing batch {counter+1}/{len(self.train_loader)}")
 
-        
-        profiler.log_memory("End training")
-
+        res = copy.copy(self.model.state_dict())
         torch.mps.empty_cache()
 
-        return self.model.state_dict()
+        return res
 

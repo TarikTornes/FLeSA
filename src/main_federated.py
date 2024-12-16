@@ -13,7 +13,7 @@ def main():
 
     client_data = create_clients(train_set, num_clients)
 
-    clients = [Client(data, batch_size=16, lr=0.01, epochs=1) for data in client_data]
+    clients = [Client(data, batch_size=16, lr=0.02, epochs=1) for data in client_data]
 
     test_loader = DataLoader(test_set, batch_size=16, shuffle=False)
     

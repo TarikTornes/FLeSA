@@ -1,9 +1,10 @@
 from ..model.bertmodel import BERTMovieReviewClassifier as Net
 from ..model.bertmodel import evaluate
-from ..utils.tracker import MemoryProfiler
+from ..utils.tracker import MemoryProfiler, trace_mem
 import copy
+from pympler import asizeof
 import random
-
+import tracemalloc
 import torch
 
 class Server:
@@ -43,9 +44,9 @@ class Server:
     def round_config_fn(self, round):
 
         if round == 0:
-            num_clients = 4
-        else:
             num_clients = 3
+        else:
+            num_clients = 2
 
 
         return random.sample(self.clients, num_clients)
@@ -57,12 +58,15 @@ class Server:
         Performs the global federated learning procedure
         """
 
+        tracemalloc.start()
 
-        global_profiler = MemoryProfiler()
+        trace_mem("Before round loop")
+
 
         for round in range(self.num_rounds):
             print(f"\n--- Round {round} ---")
-            global_profiler.log_memory(f"Start Round {round}")
+            trace_mem("in round")
+
             client_weights = []
 
             # checks if config function is available
@@ -74,39 +78,29 @@ class Server:
 
             for client in round_clients:
 
-                client.model = Net()
-
-             
-                client_profiler = MemoryProfiler()
-
                 # represents sending the global weights to the client
                 client.model.load_state_dict(self.global_model.state_dict())
+
+                trace_mem("After sending global weights")
+                w1 = client.train()
+                trace_mem("After training")
                 
                 # represents the global training of the client
-                client_weights.append(client.train())
+                client_weights.append(w1)
+                trace_mem("After appending weights")
 
-                del client.model
-                torch.mps.empty_cache()
 
-                del client.model
-                client_profiler.log_memory(f"Client {self.clients.index(client)} Training")
 
 
             # updates weights of global model to the avg of client weights
             self.global_model.load_state_dict(self.average_weights(client_weights))
 
-            del client_weights
-            torch.mps.empty_cache()
-
-            global_profiler.log_memory(f"End Round 1 {round}")
-
+            # trace_mem("After averaging weights")
 
             # torch.mps.synchronize()
 
             # computes the accuracy of the global model
             accuracy = evaluate(self.global_model, self.test_loader)
-
-            torch.mps.empty_cache()
 
             print(f'Round {round} | Accuracy: {accuracy:.4f}')
 
@@ -138,8 +132,6 @@ class Server:
 
             avg_weights[w] = weight_sum / num_clients
 
-        del client_weights
-        torch.mps.empty_cache()
 
 
         return avg_weights

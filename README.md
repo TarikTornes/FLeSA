@@ -3,7 +3,7 @@ This repository demonstrates a small example of using Federated Learning (FL) fo
 This project was created by Thuc K. N. and Tarik T. in order to get familiar with Federated Learning
 and compare the advantages and disadvantages of compared to a classical centralized learning approach.
 
-For this project the Movie Review Dataset
+For this project the Movie Review Dataset ![from https://ai.stanford.edu/~amaas/data/sentiment/] was used.
 
 ## Pre-requisites
 
@@ -23,15 +23,51 @@ git clone git@github.com:TarikTornes/FL_SentimentAnalysis.git
 ```
 
 #### 2. Install depedencies
+
 Pip:
 ``` shell
-pass
+pip install -r requirements.txt
 ```
-
 
 Conda:
 ``` shell
-pass
+conda env create --file environment.yaml
+```
+
+#### 3. Dataset installation
+Put the directory which can be downloaded into the `/data/` and rename it to `/data/movRev_data`.
+Such that the structure of the data directory will look the following:
+
+```
+data/
+└─ movRev_data/
+    ├── README
+    ├── imdb.vocab
+    ├── imdbEr.txt
+    ├── test/
+    └── train/
+```
+
+### Running the code
+The general idea of this repo is to first implement and then train two "classical"
+central models, i.e. one basing on the LSTM architecture and one basing on the Transformer architecture using BERT, on sentiment analysis.
+The next step is the implementation and training of a federated learning model for the same task using the BERT model for the client training in order to get familiar with the federated learning and demonstrate the concept.
+
+There are 3 main files that can be run:
+1. *main_bert.py*:
+This predicts or trains (depending on the configuration) the sentiment analysis model which bases on the Transformer encoder.
+
+2. *main_lstm.py*:
+This predicts or trains (depending on the configuration) the sentiment analysis model which bases on the LSTM architecture.
+
+3. *main_federated.py*:
+This simulates the federated learning procedure within an adjustable environment. One can set the number of clients, as well as the sample strategy for each round.
+
+To run one of those files you need to be in the root directory of this repo.
+
+For example to run the federated learning simulation, execute:
+```shell
+python3 -m src.main_federated
 ```
 
 

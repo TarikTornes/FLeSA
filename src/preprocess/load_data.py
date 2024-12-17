@@ -1,6 +1,18 @@
 import os, re, pickle
 
 def parse_filename(file_name):
+    """
+    This function allows to get the exact rating and id
+    of the movie review.
+
+    Args:
+        file_name (str): Is the filename
+
+    Return:
+        review_id (int): the id of the review
+        rating (int): a rating from 1 ot 10 of the review
+    """
+
     match = re.match(r'(\d+)_(\d+)\.txt', file_name)
 
     if match:
@@ -14,6 +26,16 @@ def parse_filename(file_name):
 
 
 def load_reviews():
+    """
+    This function loads the review data from the movRev_data folder stored in
+    the data dir.
+
+    Return:
+        reviews (List[str]): List of all reviews
+        labels (List[int]): List of all lables for each review
+
+    """
+
     data_dir = "./data/movRev_data"
 
     reviews = []
@@ -38,6 +60,7 @@ def load_reviews():
 
 
     for p in ["train", "test"]:
+        
         pos_dir = os.path.join(data_dir, p + '/pos')
 
         for file_name in os.listdir(pos_dir):

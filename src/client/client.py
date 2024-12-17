@@ -1,11 +1,8 @@
 from torch.utils.data import DataLoader
-import torch
 import torch.optim as optim
 import torch.nn as nn
 from ..model.bertmodel import BERTMovieReviewClassifier as Net
 from ..utils.check_device import get_device
-from ..utils.tracker import MemoryProfiler
-import copy
 
 
 class Client:
@@ -22,9 +19,9 @@ class Client:
     def __init__(self, train_data, batch_size, lr, epochs):
         self.train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
         self.model = Net()
-        self.optimizer = optim.SGD(self.model.parameters(), lr=lr)
         self.epochs = epochs
         self.criterion = nn.CrossEntropyLoss()
+        self.lr = lr
 
     def train(self):
         ''' This function trains the model of the specific client object
@@ -38,11 +35,11 @@ class Client:
         self.model.to(device)
 
 
-        # torch.mps.empty_cache()
-        # profiler.log_memory("Emptied cache")
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
+        self.model.train()
+
 
         for epoch in range(self.epochs):
-            self.model.train()
             print(f'Epoch: {epoch}')
 
             counter = 0
@@ -60,13 +57,11 @@ class Client:
                 loss.backward()
                 self.optimizer.step()
                 
-                # torch.mps.synchronize()
 
                 if (counter+1) % 25 == 0:
                     print(f"Processing batch {counter+1}/{len(self.train_loader)}")
 
-        res = copy.copy(self.model.state_dict())
-        torch.mps.empty_cache()
+        res = self.model.state_dict()
 
         return res
 

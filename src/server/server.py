@@ -6,6 +6,7 @@ from pympler import asizeof
 import random
 import tracemalloc
 import torch
+import gc
 
 class Server:
     """
@@ -42,11 +43,26 @@ class Server:
 
 
     def round_config_fn(self, round):
+        """
+        This function describes the configuration of client
+        sampling with respect to the round of federated
+        learning.
 
+        Args:
+            round (int): The current FL round
+
+        Return:
+            return1 (List[Client]): List of the sampled clients
+                                    according to the config
+        """
+
+        # Example config
+        # --> sample 4 clients in the first round
+        # --> sample 3 clients in all the other rounds
         if round == 0:
-            num_clients = 3
+            num_clients = 4
         else:
-            num_clients = 2
+            num_clients = 3
 
 
         return random.sample(self.clients, num_clients)
@@ -58,53 +74,51 @@ class Server:
         Performs the global federated learning procedure
         """
 
-        tracemalloc.start()
-
-        trace_mem("Before round loop")
-
+        # init list for all weights that will be retrieved from clients
+        client_weights = []
 
         for round in range(self.num_rounds):
             print(f"\n--- Round {round} ---")
-            trace_mem("in round")
 
-            client_weights = []
+            # client_weights = []
 
-            # checks if config function is available
+           
+            # checks if config function is available and samples subset of clients
             if self.round_config_fn:
-                # sets config for the current round
                 round_clients = self.round_config_fn(round)
             else:
                 round_clients = self.clients
 
+
+            # loop to train every client separatly
             for client in round_clients:
 
                 # represents sending the global weights to the client
                 client.model.load_state_dict(self.global_model.state_dict())
 
-                trace_mem("After sending global weights")
+                # train client and stores weights
                 w1 = client.train()
-                trace_mem("After training")
                 
                 # represents the global training of the client
                 client_weights.append(w1)
-                trace_mem("After appending weights")
-
 
 
 
             # updates weights of global model to the avg of client weights
             self.global_model.load_state_dict(self.average_weights(client_weights))
 
-            # trace_mem("After averaging weights")
-
-            # torch.mps.synchronize()
 
             # computes the accuracy of the global model
             accuracy = evaluate(self.global_model, self.test_loader)
 
+            # print the evaluation of the global model after aggregation
             print(f'Round {round} | Accuracy: {accuracy:.4f}')
 
+
         print("Completed Federated Averaging!")
+
+
+
 
 
     def average_weights(self, client_weights):

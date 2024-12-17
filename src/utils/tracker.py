@@ -5,6 +5,13 @@ import gc
 import tracemalloc
 
 
+'''
+This file contains some debugging classes and functions
+to track the values/variables such as memory usage etc.
+
+'''
+
+
 def track_memory():
     """
     Function to track memory usage

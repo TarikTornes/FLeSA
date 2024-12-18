@@ -1,9 +1,44 @@
 from torch.utils.data import Dataset
+import torch
+from sklearn.preprocessing import LabelEncoder
+from collections import Counter
 
 class MovieReviewDataset(Dataset):
-    def __init__(self, reviews, labels):
-        self.reviews = reviews
-        self.labels = labels
+    def __init__(self, reviews, labels, vocab=None, max_len=100):
+        self.max_len = max_len
+        self.encoder = LabelEncoder()
+        self.labels = torch.tensor(self.encoder.fit_transform(labels), dtype=torch.long)
+        
+        # Build vocabulary if not provided
+        if vocab is None:
+            self.vocab = self.build_vocab(reviews)
+        else:
+            self.vocab = vocab
+            
+        # Tokenize and encode reviews
+        self.reviews = [self.encode_review(review) for review in reviews]
+
+    def build_vocab(self, reviews):
+        """Builds a vocabulary with a word-to-index mapping."""
+        counter = Counter()
+        for review in reviews:
+            counter.update(review.split())
+        vocab = {word: idx + 2 for idx, (word, _) in enumerate(counter.items())}  # Reserve 0, 1 for padding/unknown
+        vocab['<PAD>'] = 0
+        vocab['<UNK>'] = 1
+        return vocab
+    
+    
+    def encode_review(self, review):
+        """Encodes a review into a fixed-length sequence of word indices."""
+        tokens = review.lower().split()
+        encoded = [self.vocab.get(word, 1) for word in tokens]  # 1 for <UNK>
+        # Pad or truncate the sequence to max_len
+        if len(encoded) < self.max_len:
+            encoded += [0] * (self.max_len - len(encoded))  # Pad
+        else:
+            encoded = encoded[:self.max_len]  # Truncate
+        return torch.tensor(encoded, dtype=torch.long)
 
     def __len__(self):
         return len(self.reviews)

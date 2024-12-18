@@ -3,6 +3,7 @@ import torch.optim as optim
 import torch.nn as nn
 from ..model.bertmodel import BERTMovieReviewClassifier as Net
 from ..utils.check_device import get_device
+import torch.optim as optim
 
 
 class Client:
@@ -20,6 +21,7 @@ class Client:
         self.train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
         self.model = Net()
         self.epochs = epochs
+        self.optimizer = optim.SGD(self.model.parameters(), lr=lr)
         self.criterion = nn.CrossEntropyLoss()
         self.lr = lr
 
@@ -35,12 +37,12 @@ class Client:
         self.model.to(device)
 
 
-        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
-        self.model.train()
+        #self.model.train()
 
 
         for epoch in range(self.epochs):
             print(f'Epoch: {epoch}')
+            self.model.train()
 
             counter = 0
             for batch in self.train_loader:

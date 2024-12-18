@@ -7,6 +7,12 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import warnings
+import torchvision
+torchvision.disable_beta_transforms_warning()
+
+# Suppress specific warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="torchvision")
 
 
 def main_train():
@@ -27,10 +33,12 @@ def main_train():
     optimizer = optim.AdamW(model.parameters(), lr=2e-5)
 
     # train the model
+    print("Starting training")
     train_model(model, train_loader, test_loader, criterion, optimizer)
 
     #save the trained parameters to file
     torch.save(model.state_dict(), './data/bert_movie_review_classifier.pth')
+    print("Saved model to /data/bert_movie_review_classifier.pth")
 
 
 def main_predict():
@@ -58,4 +66,4 @@ def main_predict():
 
 
 if __name__=="__main__":
-    main_predict()
+    main_train()

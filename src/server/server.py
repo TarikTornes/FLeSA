@@ -60,9 +60,9 @@ class Server:
         # --> sample 4 clients in the first round
         # --> sample 3 clients in all the other rounds
         if round == 0:
-            num_clients = 4
-        else:
             num_clients = 3
+        else:
+            num_clients = 2
 
 
         return random.sample(self.clients, num_clients)
@@ -75,12 +75,12 @@ class Server:
         """
 
         # init list for all weights that will be retrieved from clients
-        client_weights = []
+        # client_weights = []
 
         for round in range(self.num_rounds):
             print(f"\n--- Round {round} ---")
 
-            # client_weights = []
+            client_weights = []
 
            
             # checks if config function is available and samples subset of clients
@@ -96,6 +96,7 @@ class Server:
                 # represents sending the global weights to the client
                 client.model.load_state_dict(self.global_model.state_dict())
 
+                print(len(client_weights))
                 # train client and stores weights
                 w1 = client.train()
                 
@@ -132,8 +133,8 @@ class Server:
             avg_weights (weights): new weights for the global model
         """
 
-        # avg_weights = copy.deepcopy(client_weights[0])
-        avg_weights = client_weights[0]
+        avg_weights = copy.deepcopy(client_weights[0])
+        # avg_weights = client_weights[0]
 
         num_clients = len(client_weights)
 

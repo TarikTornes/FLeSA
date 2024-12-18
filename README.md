@@ -80,4 +80,4 @@ With 9 Rounds and sampling 4 out of 100 clients for the first round and 3 client
 
 
 ### References
-- Dataset: ![link to dataset](https://ai.stanford.edu/~amaas/data/sentiment/)
+- Dataset: https://ai.stanford.edu/~amaas/data/sentiment/

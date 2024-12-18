@@ -16,10 +16,10 @@ For this project the Movie Review Dataset from https://ai.stanford.edu/~amaas/da
 Clone the repo to your local machine
 ``` shell
 # Using HTTPS
-git clone https://github.com/TarikTornes/FLeSA
+git clone https://github.com/TarikTornes/FLeSA.git
 
 # Using SSH
-git clone git@github.com:TarikTornes/FLeSA
+git clone git@github.com:TarikTornes/FLeSA.git
 ```
 
 #### 2. Install depedencies

@@ -1,7 +1,32 @@
-from torch.utils.data import Dataset
+import re
+import string
 import torch
+from torch.utils.data import Dataset
 from sklearn.preprocessing import LabelEncoder
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
 from collections import Counter
+
+def cleantext(text):
+    """Cleans the text by removing special characters, punctuation, stop words, and lemmatizing."""
+    # Remove special characters
+    text = re.sub(r'\W', ' ', text)
+    
+    # Remove punctuation
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    
+    # Lowercase the text
+    text = text.lower()
+    
+    # Remove stop words
+    stop_words = set(stopwords.words('english'))
+    text = ' '.join([word for word in text.split() if word not in stop_words])
+    
+    # Apply Porter Stemmer
+    stemmer = PorterStemmer()
+    text = ' '.join([stemmer.stem(word) for word in text.split()])
+    
+    return text
 
 class MovieReviewDataset(Dataset):
     def __init__(self, reviews, labels, vocab=None, max_len=100):
@@ -15,8 +40,8 @@ class MovieReviewDataset(Dataset):
         else:
             self.vocab = vocab
             
-        # Tokenize and encode reviews
-        self.reviews = [self.encode_review(review) for review in reviews]
+        # Clean, tokenize and encode reviews
+        self.reviews = [self.encode_review(cleantext(review)) for review in reviews]
 
     def build_vocab(self, reviews):
         """Builds a vocabulary with a word-to-index mapping."""
@@ -28,10 +53,9 @@ class MovieReviewDataset(Dataset):
         vocab['<UNK>'] = 1
         return vocab
     
-    
     def encode_review(self, review):
         """Encodes a review into a fixed-length sequence of word indices."""
-        tokens = review.lower().split()
+        tokens = review.split()
         encoded = [self.vocab.get(word, 1) for word in tokens]  # 1 for <UNK>
         # Pad or truncate the sequence to max_len
         if len(encoded) < self.max_len:

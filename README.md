@@ -1,9 +1,9 @@
-# FL_SentimentAnalysis
-This repository demonstrates a small example of using Federated Learning (FL) for Sentiment Analysis.
+# FLeSA
+This repository demonstrates a small example of using Federated LEarning for Sentiment Analysis.
 This project was created by Thuc K. N. and Tarik T. in order to get familiar with Federated Learning
 and compare the advantages and disadvantages of compared to a classical centralized learning approach.
 
-For this project the Movie Review Dataset ![from https://ai.stanford.edu/~amaas/data/sentiment/] was used.
+For this project the Movie Review Dataset from https://ai.stanford.edu/~amaas/data/sentiment/ was used.
 
 ## Pre-requisites
 
@@ -16,10 +16,10 @@ For this project the Movie Review Dataset ![from https://ai.stanford.edu/~amaas/
 Clone the repo to your local machine
 ``` shell
 # Using HTTPS
-git clone https://github.com/TarikTornes/FL_SentimentAnalysis.git
+git clone https://github.com/TarikTornes/FLeSA
 
 # Using SSH
-git clone git@github.com:TarikTornes/FL_SentimentAnalysis.git
+git clone git@github.com:TarikTornes/FLeSA
 ```
 
 #### 2. Install depedencies

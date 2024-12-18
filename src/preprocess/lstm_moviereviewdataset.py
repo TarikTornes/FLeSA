@@ -4,7 +4,6 @@ import torch
 from torch.utils.data import Dataset
 from sklearn.preprocessing import LabelEncoder
 from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
 from collections import Counter
 
 def cleantext(text):
@@ -21,10 +20,6 @@ def cleantext(text):
     # Remove stop words
     stop_words = set(stopwords.words('english'))
     text = ' '.join([word for word in text.split() if word not in stop_words])
-    
-    # Apply Porter Stemmer
-    stemmer = PorterStemmer()
-    text = ' '.join([stemmer.stem(word) for word in text.split()])
     
     return text
 

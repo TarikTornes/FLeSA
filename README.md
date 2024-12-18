@@ -76,8 +76,8 @@ xx.xx% for the LSTM model.
 Due to some hardware limitations we needed to limit the number of rounds and clients that were training.
 With 9 Rounds and sampling 4 out of 100 clients for the first round and 3 clients for the remaining rounds we have achieved an accuracy of 84.248%. The constant improvement of the model can be seen in the following graph, with the exception of an outlier.
 
-!(ressources/diagram_acc_fl.png)
+![Diagram indicating Accuracy](ressources/diagram_acc_fl.png)
 
 
 ### References
-- Dataset: !(https://ai.stanford.edu/~amaas/data/sentiment/)
+- Dataset: ![link to dataset](https://ai.stanford.edu/~amaas/data/sentiment/)
